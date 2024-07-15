@@ -15,9 +15,9 @@
 #pragma once
 
 static uint8_t calc_current_operand = 0;
-static char calc_operand_0[CALC_DIGITS+1] = "";
-static char calc_operand_1[CALC_DIGITS+1] = "";
-char calc_result[CALC_DIGITS+1] = "";
+static char calc_operand_0[CALC_DIGITS+1] = "\0";
+static char calc_operand_1[CALC_DIGITS+1] = "\0";
+char calc_result[CALC_DIGITS+1] = "\0";
 static char calc_status[CALC_DIGITS+1] = "";
 static char calc_operator = ' ';
 static bool calc_reset = false;
@@ -91,7 +91,7 @@ static void calcOperands(void){
 
     //now convert the float result into a string
     //we know the total string size but we need to find the size of the integer component to know how much we have for decimals
-    uint8_t magnitude = ceil(log10(result));
+    uint8_t magnitude = ceil(log10(fabs(result)));
     uint8_t max_decimals = CALC_DIGITS-magnitude-1;
     //but max it at 7 because that seems the useful limit of our floats
     if(max_decimals>7){
@@ -159,11 +159,11 @@ void calcInput(char input){
       (input == '.')
   ){
       //if this is following an equals, then we start from scratch as if new calculation
-      if(calc_reset == true){
+      if(calc_reset){
         calc_reset = false;
         calc_current_operand = 0;
-        calc_operand_0[0] = 0;
-        calc_operand_1[0] = 0;
+        calc_operand_0[0] = '\0';
+        calc_operand_1[0] = '\0';
         operand = calc_operand_0;
         len = 0;
       }
@@ -185,11 +185,11 @@ void calcInput(char input){
   }else if(input == 'c'){
     //if we have something typed in, clear it
     if(len>0){
-      operand[0] = 0;
+      operand[0] = '\0';
     //otherwise clear both operands and start again
     }else{
-      calc_operand_0[0] = 0;
-      calc_operand_1[0] = 0;
+      calc_operand_0[0] = '\0';
+      calc_operand_1[0] = '\0';
     }
     strcpy(calc_result, operand);
     calcUpdate();
@@ -245,7 +245,7 @@ void calcInput(char input){
     }else if(calc_reset){
       calc_operator = input;
       calc_reset = false;
-      calc_operand_1[0] = 0;
+      calc_operand_1[0] = '\0';
       calcUpdate();
 
     }else {
@@ -253,7 +253,7 @@ void calcInput(char input){
       if (strlen(calc_operand_1)>0){
         calcOperands();
       }
-      calc_operand_1[0] = 0;
+      calc_operand_1[0] = '\0';
       calc_operator = input;
       calcUpdate();
     }
@@ -274,7 +274,7 @@ void calcInput(char input){
       strcpy(calc_operand_0, calc_operand_1);
     }
     calc_current_operand = 1;
-    calc_operand_1[0] = 0;
+    calc_operand_1[0] = '\0';
     calc_operator = input;
     calc_reset = true; //simulate another =
     calcOperands();
